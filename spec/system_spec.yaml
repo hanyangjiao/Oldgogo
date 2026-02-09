@@ -1,0 +1,130 @@
+product:
+  name: "独居老人实时监控与异常分析产品"
+  one_liner: >
+    该系统以严格同步的多模态数据为输入，在固定时间窗口内调用 Gemini 进行一次全量任务与异常推理，
+    通过 schema 校验的结构化输出驱动 dataset 状态更新，并在冷却约束下进行人机与联系人通知，
+    实现可控、可解释、可扩展的独居老人异常监控。
+
+requirements:
+  data_acquisition_and_transmission:
+    sources:
+      video_stream:
+        device: "手机摄像头"
+        format: "连续帧（视频流）"
+      heart_rate:
+        device: "运动手表"
+        metric: "HR"
+      timestamp:
+        rule: "统一时间戳"
+    sync_rule:
+      strict_sync: true
+      description: "图像帧与心率数据严格时间同步"
+    transmission_unit_per_inference_window:
+      includes:
+        - "一段连续视频帧（时间窗口内）"
+        - "对应时间段的心率序列"
+        - "时间戳"
+
+  user_defined_inputs:
+    task_list: true
+    reset_time:
+      daily_reset: true
+      reset_effects:
+        tasks_status_to: "Incomplete"
+        anomaly_list_cleared: true
+    anomaly_type:
+      traverse_all: true
+      allow_multiple_matches_per_window: true
+    emergency_contact:
+      fields: ["姓名", "关系", "邮箱"]
+    cooldown:
+      parameterized: true
+      example:
+        cooldown_cycles_after_voice_reminder: 2
+        binding_example: "推理周期=3min -> 冷却=2 cycles=6min"
+
+  dataset:
+    schema_validation_required: true
+    task_list:
+      task_fields:
+        - type
+        - start_time
+        - end_time
+        - status
+        - if_repeatable
+      status_enum: ["Incomplete", "Complete", "Repeated(number)"]
+    anomaly_list:
+      initial_empty: true
+      per_anomaly_fields:
+        - type
+        - start_time
+        - end_time
+        - status
+      status_semantics: "num_of_happens"
+
+  scheduled_inference_loop:
+    schedule:
+      periodic: true
+      example_period_minutes: 3
+    per_window_behavior:
+      infer_once_per_window: true
+      anomaly_match:
+        traverse_anomaly_type_list: true
+        allow_multiple_types_match: true
+    gemini_api_call:
+      inputs:
+        - "连续视频帧（一个时间窗口）"
+        - "对应时间窗口的心率数据"
+        - "时间戳"
+        - "当前 dataset"
+        - "Prompt（规定固定 JSON 输出格式/字段/含义）"
+      output:
+        analysis_report:
+          format: "固定 JSON"
+          schema_validation_required: true
+          gate: "通过 schema 校验后才可进入更新流程"
+
+  state_update_and_notifications:
+    task_update_rules:
+      when_incomplete_becomes_complete:
+        action: "status -> Complete"
+      when_task_repeated:
+        if_repeatable_true:
+          action: "status -> Repeated: num + 1"
+        if_repeatable_false:
+          action:
+            - "status 不修改"
+            - "语音提醒（受冷却时间约束）"
+    anomaly_rules:
+      when_anomaly_found:
+        actions:
+          - "写入 dataset.anomaly_list"
+          - "更新 num_of_happens"
+          - "发送邮件给紧急联系人（内容格式固定，动态填充异常类型与发生时间）"
+      severity:
+        not_used_yet: true
+        note: "当前阶段不区分异常等级，所有异常统一处理"
+    cooldown_rule:
+      voice_reminder:
+        enabled: true
+        parameter: "cooldown_cycles_after_voice_reminder"
+        behavior: "提醒一次后，API 连续处理 N 次之后才能再次语音提醒"
+
+  file_management:
+    analysis_report_persistence:
+      save_local: true
+      path_contains: ["日期", "精确时间戳"]
+      schema_validation_required_before_save: true
+    daily_summary_at_reset_time:
+      trigger: "reset_time"
+      actions:
+        - "将当前 dataset 输入 Gemini API"
+        - "生成 human-readable format 总结"
+        - "发送 email 给紧急联系人"
+        - "保存到与 analysis report 相同目录结构"
+
+  interaction_system:
+    channels:
+      - "语音提醒（受冷却参数控制）"
+      - "邮件通知"
+

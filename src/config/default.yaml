@@ -1,0 +1,45 @@
+task_list:
+  - type: "take_medicine"
+    start_time: "2026-01-16T08:00:00+08:00"
+    end_time: "2026-01-16T09:00:00+08:00"
+    status: "Incomplete"
+    if_repeatable: false
+  - type: "drink_water"
+    start_time: "2026-01-16T09:00:00+08:00"
+    end_time: "2026-01-16T10:00:00+08:00"
+    status: "Incomplete"
+    if_repeatable: true
+
+anomaly_type_list:
+  - "falldown"
+  - "tachycardia"
+  - "bradycardia"
+
+reset_time:
+  daily_reset: true
+  time_local: "23:59"
+  tasks_status_to: "Incomplete"
+  anomaly_list_cleared: true
+
+cooldown:
+  cooldown_cycles_after_voice_reminder: 2
+  inference_cycle_minutes: 3
+
+# Voice notification settings
+# Can also be configured via environment variables:
+#   VOICE_ENABLED=true/false  (default: true)
+#   VOICE_RATE=150           (words per minute, default: 150)
+#   VOICE_VOLUME=1.0         (0.0 to 1.0, default: 1.0)
+voice:
+  enabled: true              # Enable/disable voice output
+  rate: 150                  # Speaking speed (words per minute)
+  volume: 1.0                # Volume level (0.0 to 1.0)
+
+emergency_contact:
+  - name: "Wang Li"
+    relationship: "daughter"
+    email: "wangli@example.com"
+  - name: "Zhang Wei"
+    relationship: "son"
+    email: "zhangwei@example.com"
+

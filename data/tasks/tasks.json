@@ -1,0 +1,30 @@
+[
+  {
+    "task_id": "morning_medication",
+    "task_type": "take_medicine",
+    "window_start": "2026-01-16T08:00:00+08:00",
+    "window_end": "2026-01-16T12:00:00+08:00",
+    "min_confidence": 0.8
+  },
+  {
+    "task_id": "morning_hydration",
+    "task_type": "drink_water",
+    "window_start": "2026-01-16T08:00:00+08:00",
+    "window_end": "2026-01-16T12:00:00+08:00",
+    "min_confidence": 0.7
+  },
+  {
+    "task_id": "daily_bp_check",
+    "task_type": "measure_bp",
+    "window_start": "2026-01-16T09:00:00+08:00",
+    "window_end": "2026-01-16T11:00:00+08:00",
+    "min_confidence": 0.75
+  },
+  {
+    "task_id": "morning_walk",
+    "task_type": "walk",
+    "window_start": "2026-01-16T08:30:00+08:00",
+    "window_end": "2026-01-16T10:30:00+08:00",
+    "min_confidence": 0.6
+  }
+]

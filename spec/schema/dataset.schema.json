@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Dataset",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_list", "anomaly_list"],
+  "properties": {
+    "task_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "start_time", "end_time", "status", "if_repeatable"],
+        "properties": {
+          "type": { "type": "string", "minLength": 1 },
+          "start_time": { "type": "string", "format": "date-time" },
+          "end_time": { "type": "string", "format": "date-time" },
+          "status": {
+            "anyOf": [
+              { "enum": ["Incomplete", "Complete"] },
+              { "type": "string", "pattern": "^Repeated\\([0-9]+\\)$" }
+            ]
+          },
+          "if_repeatable": { "type": "boolean" }
+        }
+      }
+    },
+    "anomaly_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "start_time", "end_time", "status"],
+        "properties": {
+          "type": { "type": "string", "minLength": 1 },
+          "start_time": { "type": "string", "format": "date-time" },
+          "end_time": { "type": "string", "format": "date-time" },
+          "status": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "last_updated": { "type": "string", "format": "date-time" }
+  }
+}
+

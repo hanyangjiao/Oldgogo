@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Oldgogo UI</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <div>
+            <p class="brand-title">Oldgogo</p>
+            <p class="brand-subtitle">Realtime video, vitals, and Gemini reports</p>
+          </div>
+        </div>
+        <div class="status-chip" id="systemStatus">
+          <span class="dot"></span>
+          <span>System ready</span>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="left">
+          <div class="panel controls">
+            <div class="panel-header">
+              <h2>Inference Controls</h2>
+              <span class="panel-hint">Select video + heart rate, then start Gemini</span>
+            </div>
+            <div class="control-grid">
+              <label class="control-field">
+                <span class="control-label">Video Type</span>
+                <select id="videoSelect"></select>
+              </label>
+              <label class="control-field">
+                <span class="control-label">Heart Rate Type</span>
+                <select id="hrSelect"></select>
+              </label>
+            </div>
+            <div class="control-actions">
+              <button class="secondary-button" id="addPairButton">Add Pair</button>
+              <button class="primary-button" id="startButton">Start Inference</button>
+              <button class="ghost-button" id="clearPairsButton">Clear Queue</button>
+            </div>
+            <div class="control-footer">
+              <span class="control-status" id="controlStatus">Idle</span>
+              <span class="control-status" id="pairCount">0 pairs queued</span>
+            </div>
+            <div class="pair-queue" id="pairQueue"></div>
+          </div>
+
+          <div class="panel video">
+            <div class="panel-header">
+              <h2>Live Video</h2>
+              <div class="panel-actions">
+                <span class="badge" id="caseBadge">Hydration Check</span>
+                <span class="badge badge-outline" id="caseClock">00:00</span>
+              </div>
+            </div>
+            <div class="video-shell">
+              <video id="caseVideo" autoplay muted loop playsinline></video>
+              <div class="video-overlay">
+                <span class="live-dot"></span>
+                <span>LIVE FEED</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel vitals">
+            <div class="panel-header">
+              <h2>Heart Rate</h2>
+              <div class="panel-actions">
+                <span class="badge badge-accent" id="bpmValue">72 BPM</span>
+                <span class="badge badge-outline" id="bpmStatus">Normal</span>
+              </div>
+            </div>
+            <div class="vitals-body">
+              <canvas id="hrCanvas" height="160"></canvas>
+              <div class="vitals-metrics">
+                <div>
+                  <p class="metric-label">Signal Quality</p>
+                  <p class="metric-value" id="signalQuality">Stable</p>
+                </div>
+                <div>
+                  <p class="metric-label">Synced Window</p>
+                  <p class="metric-value" id="syncWindow">00:30s</p>
+                </div>
+                <div>
+                  <p class="metric-label">Loop Mode</p>
+                  <p class="metric-value">Continuous</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="right">
+          <div class="panel report">
+            <div class="panel-header">
+              <div>
+                <h2>Gemini Report</h2>
+                <p class="panel-hint">Streaming analysis output</p>
+              </div>
+              <div class="panel-actions">
+                <button class="ghost-button" id="downloadButton" disabled>Download Report</button>
+                <span class="badge badge-outline" id="reportStage">Awaiting input</span>
+              </div>
+            </div>
+
+            <div class="report-progress">
+              <div class="progress-bar" id="reportProgress"></div>
+            </div>
+
+            <div class="report-body">
+              <div class="report-section">
+                <h3>Input Summary</h3>
+                <p class="report-text" id="inputText"></p>
+              </div>
+              <div class="report-section">
+                <h3>Inference Window</h3>
+                <p class="report-text" id="windowText"></p>
+              </div>
+              <div class="report-section">
+                <h3>Tasks</h3>
+                <p class="report-text" id="tasksText"></p>
+              </div>
+              <div class="report-section">
+                <h3>Detected Anomalies</h3>
+                <p class="report-text" id="anomalyText"></p>
+              </div>
+              <div class="report-section">
+                <h3>Notifications</h3>
+                <p class="report-text" id="notificationText"></p>
+              </div>
+              <div class="report-section">
+                <h3>Human Readable Summary</h3>
+                <p class="report-text" id="humanText"></p>
+              </div>
+            </div>
+
+            <div class="report-json">
+              <div class="stream-header">
+                <span class="stream-title">Raw Report JSON</span>
+                <span class="stream-pill">Gemini</span>
+              </div>
+              <pre class="report-json-body" id="reportJson"></pre>
+            </div>
+
+            <div class="report-stream">
+              <div class="stream-header">
+                <span class="stream-title">Gemini Output</span>
+                <span class="stream-pill">Live</span>
+              </div>
+              <div class="stream-log" id="streamLog"></div>
+            </div>
+          </div>
+
+          <div class="panel pipeline">
+            <div class="panel-header">
+              <h2>Processing Pipeline</h2>
+              <span class="panel-hint">Updated with each Gemini response</span>
+            </div>
+            <div class="pipeline-steps">
+              <div class="pipeline-step" data-step="sync">
+                <span class="step-dot"></span>
+                <div>
+                  <p class="step-title">Video and vitals sync</p>
+                  <p class="step-meta">Window alignment 30s</p>
+                </div>
+              </div>
+              <div class="pipeline-step" data-step="vision">
+                <span class="step-dot"></span>
+                <div>
+                  <p class="step-title">Frame scan and motion pass</p>
+                  <p class="step-meta">Keyframe extraction</p>
+                </div>
+              </div>
+              <div class="pipeline-step" data-step="vitals">
+                <span class="step-dot"></span>
+                <div>
+                  <p class="step-title">Heart rate anomaly check</p>
+                  <p class="step-meta">Rolling 10s window</p>
+                </div>
+              </div>
+              <div class="pipeline-step" data-step="prompt">
+                <span class="step-dot"></span>
+                <div>
+                  <p class="step-title">Gemini prompt assembly</p>
+                  <p class="step-meta">Context and thresholds</p>
+                </div>
+              </div>
+              <div class="pipeline-step" data-step="report">
+                <span class="step-dot"></span>
+                <div>
+                  <p class="step-title">Report streaming</p>
+                  <p class="step-meta">Structured JSON output</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel settings">
+            <div class="panel-header">
+              <div>
+                <h2>Latest Email Preview</h2>
+                <p class="panel-hint">Most recent anomaly email body</p>
+              </div>
+              <span class="badge badge-outline" id="emailStatus">No email</span>
+            </div>
+            <pre class="email-preview" id="emailPreview"></pre>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

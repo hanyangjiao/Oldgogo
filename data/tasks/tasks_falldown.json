@@ -1,0 +1,9 @@
+[
+  {
+    "task_id": "falldown_test",
+    "task_type": "falldown",
+    "window_start": "2026-01-16T09:00:00+08:00",
+    "window_end": "2026-01-16T09:05:00+08:00",
+    "min_confidence": 0.7
+  }
+]

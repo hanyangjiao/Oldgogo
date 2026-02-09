@@ -1,0 +1,16 @@
+[Unit]
+Description=Oldgogo Elder Monitor UI Server
+After=network.target
+
+[Service]
+Type=simple
+User=xxz
+WorkingDirectory=/home/xxz/code/Oldgogo
+Environment="GEMINI_API_KEY=your_gemini_key_here"
+Environment="PATH=/home/xxz/miniconda3/envs/dds/bin:/usr/local/bin:/usr/bin:/bin"
+ExecStart=/home/xxz/miniconda3/envs/dds/bin/python /home/xxz/code/Oldgogo/src/app/ui_server.py --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

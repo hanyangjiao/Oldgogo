@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AnalysisReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "window", "timestamp", "tasks", "anomalies", "dataset_snapshot", "notifications"],
+  "properties": {
+    "schema_version": { "type": "string", "minLength": 1 },
+    "window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_time", "end_time"],
+      "properties": {
+        "start_time": { "type": "string", "format": "date-time" },
+        "end_time": { "type": "string", "format": "date-time" }
+      }
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frame_count", "heart_rate_points"],
+      "properties": {
+        "frame_count": { "type": "integer", "minimum": 1 },
+        "heart_rate_points": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "match", "repeated_count", "reason"],
+        "properties": {
+          "type": { "type": "string", "minLength": 1 },
+          "match": { "type": "boolean" },
+          "repeated_count": { "type": "integer", "minimum": 0 },
+          "reason": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "anomalies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "match", "num_of_happens", "reason"],
+        "properties": {
+          "type": { "type": "string", "minLength": 1 },
+          "match": { "type": "boolean" },
+          "num_of_happens": { "type": "integer", "minimum": 0 },
+          "reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "dataset_snapshot": { "$ref": "dataset.schema.json" },
+    "notifications": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["voice_reminder", "email_sent", "cooldown_active"],
+      "properties": {
+        "voice_reminder": { "type": "boolean" },
+        "email_sent": { "type": "boolean" },
+        "cooldown_active": { "type": "boolean" },
+        "recipients": {
+          "type": "array",
+          "items": { "type": "string", "format": "email" }
+        }
+      }
+    }
+  }
+}
